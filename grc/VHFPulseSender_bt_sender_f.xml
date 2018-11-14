@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<block>
+  <name>Bluetooth Sender</name>
+  <key>VHFPulseSender_bt_sender_f</key>
+  <category>VHFPulseSender</category>
+  <import>import VHFPulseSender</import>
+  <make>VHFPulseSender.bt_sender_f()</make>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type>float</type>
+  </sink>
+</block>

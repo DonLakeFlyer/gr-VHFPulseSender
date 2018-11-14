@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<block>
+  <name>UDP Sender</name>
+  <key>VHFPulseSender_udp_sender_f</key>
+  <category>VHFPulseSender</category>
+  <import>import VHFPulseSender</import>
+  <make>VHFPulseSender.udp_sender_f()</make>
+
+  <!-- Make one 'sink' node per input. Sub-nodes:
+       * name (an identifier for the GUI)
+       * type
+       * vlen
+       * optional (set to 1 for optional inputs) -->
+  <sink>
+    <name>in</name>
+    <type>float</type>
+  </sink>
+</block>
