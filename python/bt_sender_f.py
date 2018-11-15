@@ -22,7 +22,7 @@ class bt_sender_f(gr.sync_block):
 
         uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
         advertise_service(self.serverSocket,
-                            "PulseServer",
+                            "PulseServer " + str(channel_index),
                             service_id = uuid,
                             service_classes = [ uuid, SERIAL_PORT_CLASS ],
                             profiles = [ SERIAL_PORT_PROFILE ])
