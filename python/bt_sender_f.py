@@ -10,8 +10,10 @@ class bt_sender_f(gr.sync_block):
     """
     docstring for block bt_sender_f
     """
-    def __init__(self):
+    def __init__(self, channel_index):
         gr.sync_block.__init__(self, name="bt_sender_f", in_sig=[numpy.float32], out_sig=None)
+
+        self.channelIndex = channel_index
 
         self.clientSocket = None
         self.serverSocket = BluetoothSocket (RFCOMM)
@@ -38,6 +40,6 @@ class bt_sender_f(gr.sync_block):
             if math.isnan(pulseValue):
                 continue
             if pulseValue > 0 and self.clientSocket:
-                self.clientSocket.send(str(pulseValue) + "\n")
+                self.clientSocket.send(str(self.channelIndex) + " " + str(pulseValue) + "\n")
         return len(input_items[0])
 
