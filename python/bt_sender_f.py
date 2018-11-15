@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy
+import math
 from gnuradio import gr
 from bluetooth import *
 
@@ -16,14 +17,14 @@ class bt_sender_f(gr.sync_block):
         self.serverSocket = BluetoothSocket (RFCOMM)
         self.serverSocket.bind(("", PORT_ANY))
         self.serverSocket.listen(1)
-        self.serverSocket.setblocking(False)
 
-        uuid = "612490e5-c027-488e-b173-df985ccf2bdc"
+        uuid = "94f39d29-7d6d-437d-973b-fba39e49d4ee"
         advertise_service(self.serverSocket,
                             "PulseServer",
                             service_id = uuid,
                             service_classes = [ uuid, SERIAL_PORT_CLASS ],
                             profiles = [ SERIAL_PORT_PROFILE ])
+        self.serverSocket.setblocking(False)
 
     def work(self, input_items, output_items):
         if not self.clientSocket:
@@ -33,11 +34,10 @@ class bt_sender_f(gr.sync_block):
                 pass
             else:
                 print("Accepted connection from ", clientInfo)
-                self.clientSocket.setblocking(False)
         for pulseValue in input_items[0]:
             if math.isnan(pulseValue):
                 continue
-            if pulseValue > 0:
-                self.clientSocket.send(str(pulseValue))
-        return len(output_items[0])
+            if pulseValue > 0 and self.clientSocket:
+                self.clientSocket.send(str(pulseValue) + "\n")
+        return len(input_items[0])
 
