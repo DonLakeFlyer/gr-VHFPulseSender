@@ -40,9 +40,18 @@ class bt_sender_f(gr.sync_block):
             except:
                 pass
             else:
+                self.clientSocket.setblocking(False)
                 print("Accepted connection from ", clientInfo)
-        if self.pulseDetectBase:
-            self.pulseDetectBase.set_vga_gain(15)
+        if self.clientSocket:
+            try:
+                data = self.clientSocket.recv(1024)
+            except:
+                pass
+            else:
+                if len(data) != 0 and self.pulseDetectBase:
+                    newGain = int(data)
+                    print("gain changed %d" % newGain)
+                    self.pulseDetectBase.set_vga_gain(newGain)
         for pulseValue in input_items[0]:
             if math.isnan(pulseValue):
                 continue
