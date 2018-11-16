@@ -50,7 +50,7 @@ class bt_sender_f(gr.sync_block):
             else:
                 if len(data) != 0 and self.pulseDetectBase:
                     rgGain = data.split()
-                    newGain = int(rgGain[rgGain.length - 1])
+                    newGain = int(rgGain[len(rgGain) - 1])
                     print("gain changed %d" % newGain)
                     self.pulseDetectBase.set_vga_gain(newGain)
         for pulseValue in input_items[0]:
