@@ -15,6 +15,8 @@ class bt_sender_f(gr.sync_block):
 
         self.channelIndex = channel_index
 
+        self.pulseDetectBase = None
+
         self.clientSocket = None
         self.serverSocket = BluetoothSocket (RFCOMM)
         self.serverSocket.bind(("", PORT_ANY))
@@ -36,6 +38,8 @@ class bt_sender_f(gr.sync_block):
                 pass
             else:
                 print("Accepted connection from ", clientInfo)
+        if self.pulseDetectBase:
+            self.pulseDetectBase.set_vga_gain(15)
         for pulseValue in input_items[0]:
             if math.isnan(pulseValue):
                 continue
@@ -43,3 +47,5 @@ class bt_sender_f(gr.sync_block):
                 self.clientSocket.send(str(self.channelIndex) + " " + str(pulseValue) + "\n")
         return len(input_items[0])
 
+    def setPulseDetectBase(self, pulseDetectBase):
+        self.pulseDetectBase = pulseDetectBase
