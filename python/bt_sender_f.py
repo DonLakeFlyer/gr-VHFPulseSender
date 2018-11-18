@@ -3,6 +3,7 @@
 
 import numpy
 import math
+import select
 from gnuradio import gr
 from bluetooth import *
 from gpiozero import CPUTemperature
@@ -56,9 +57,14 @@ class bt_sender_f(gr.sync_block):
         for pulseValue in input_items[0]:
             if math.isnan(pulseValue):
                 continue
-            if pulseValue > 0:
-                if self.clientSocket:
+            if pulseValue > 0 and self.clientSocket:
+                rgSelect = select.select( [], [ self.clientSocket], [] )
+                if len(rgSelect[1]):
                     self.clientSocket.send(str(self.channelIndex) + " " + str(pulseValue) + " " + str(self.cpuTemp.temperature) + "\n")
+                else:
+                    self.clientSocket.close()
+                    self.clientSocket = None
+
         return len(input_items[0])
 
     def setPulseDetectBase(self, pulseDetectBase):
