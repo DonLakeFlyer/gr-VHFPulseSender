@@ -5,6 +5,7 @@ import socket
 import struct
 import math
 import numpy
+import CommandParser
 from gnuradio import gr
 
 class udp_sender_f(gr.sync_block):
@@ -16,11 +17,22 @@ class udp_sender_f(gr.sync_block):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.udpAddress = ('localhost', 10000)
 
+        self.pulseDetectBase = None
+
     def work(self, input_items, output_items):
         for pulseValue in input_items[0]:
+            try:
+                data = self.sock.recv(1024)
+            except:
+                pass
+            else:
+                parseCommand(data, self.pulseDetectBase)
             if math.isnan(pulseValue):
                 continue
             if pulseValue > 0:
                 self.sock.sendto(struct.pack('<f', pulseValue), self.udpAddress)
         return len(input_items[0])
 
+
+    def setPulseDetectBase(self, pulseDetectBase):
+        self.pulseDetectBase = pulseDetectBase

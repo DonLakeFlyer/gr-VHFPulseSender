@@ -4,6 +4,7 @@
 import numpy
 import math
 import select
+import CommandParser
 from gnuradio import gr
 from bluetooth import *
 from gpiozero import CPUTemperature
@@ -49,11 +50,7 @@ class bt_sender_f(gr.sync_block):
             except:
                 pass
             else:
-                if len(data) != 0 and self.pulseDetectBase:
-                    rgGain = data.split()
-                    newGain = int(rgGain[len(rgGain) - 1])
-                    print("gain changed %d" % newGain)
-                    self.pulseDetectBase.set_vga_gain(newGain)
+                parseCommand(data, self.pulseDetectBase)
         for pulseValue in input_items[0]:
             if math.isnan(pulseValue):
                 continue
