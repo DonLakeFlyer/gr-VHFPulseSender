@@ -15,6 +15,7 @@ class udp_sender_f(gr.sync_block):
     def __init__(self):
         gr.sync_block.__init__(self, name="udp_sender_f", in_sig=[numpy.float32], out_sig=None)
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.setblocking(False)
         self.udpAddress = ('localhost', 10000)
 
         self.pulseDetectBase = None
