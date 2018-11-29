@@ -7,7 +7,13 @@ import select
 import CommandParser
 from gnuradio import gr
 from bluetooth import *
-from gpiozero import CPUTemperature
+
+try:
+    from gpiozero import CPUTemperature
+except:
+    gpiozerioAvailable = False
+else:
+    gpiozerioAvailable = True
 
 class bt_sender_f(gr.sync_block):
     """
@@ -20,7 +26,10 @@ class bt_sender_f(gr.sync_block):
 
         self.pulseDetectBase = None
 
-        self.cpuTemp = CPUTemperature()
+        if gpiozerioAvailable:
+            self.cpuTemp = CPUTemperature()
+        else:
+            self.cpuTemp = 0
 
         self.clientSocket = None
         self.serverSocket = BluetoothSocket (RFCOMM)
