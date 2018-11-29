@@ -10,9 +10,9 @@ def parseCommand(commandStr, pulseDetectBase):
 	value = int(args[len])
 	if command == "gain":
 		print("Gain changed ", value)
-		pulseDetectBase.set_pulse_freq(value)
+		pulseDetectBase.set_vga_gain(value)
 	elif command == "freq":	
 		print("Frequency changed ", value)
-		pulseDetectBase.set_vga_gain(value)
+		pulseDetectBase.set_pulse_freq(value)
 	else:
 		print("Unknown command ", command)
