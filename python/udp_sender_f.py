@@ -8,12 +8,27 @@ import numpy
 import CommandParser
 from gnuradio import gr
 
+try:
+    from gpiozero import CPUTemperature
+except:
+    gpiozerioAvailable = False
+else:
+    gpiozerioAvailable = True
+
 class udp_sender_f(gr.sync_block):
     """
     docstring for block udp_sender_f
     """
-    def __init__(self):
+    def __init__(self, channel_index):
         gr.sync_block.__init__(self, name="udp_sender_f", in_sig=[numpy.float32], out_sig=None)
+
+        self.channelIndex = channel_index
+
+        if gpiozerioAvailable:
+            self.cpuTemp = CPUTemperature()
+        else:
+            self.cpuTemp = 0
+
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
         self.udpAddress = ('localhost', 10000)
@@ -31,7 +46,7 @@ class udp_sender_f(gr.sync_block):
             if math.isnan(pulseValue):
                 continue
             if pulseValue > 0:
-                self.sock.sendto(struct.pack('<f', pulseValue), self.udpAddress)
+                self.sock.sendto(struct.pack('<iff', self.channelIndex, pulseValue, self.cpuTemp.temperature), self.udpAddress)
         return len(input_items[0])
 
 
