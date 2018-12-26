@@ -27,11 +27,11 @@ class udp_sender_f(gr.sync_block):
         if gpiozerioAvailable:
             self.cpuTemp = CPUTemperature()
         else:
-            self.cpuTemp = 0
+            self.cpuTemp = None
 
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.setblocking(False)
-        self.udpAddress = ('localhost', 10000)
+        self.udpAddress = ('224.0.0.1', 5007)
 
         self.pulseDetectBase = None
 
@@ -46,7 +46,10 @@ class udp_sender_f(gr.sync_block):
             if math.isnan(pulseValue):
                 continue
             if pulseValue > 0:
-                self.sock.sendto(struct.pack('<iff', self.channelIndex, pulseValue, self.cpuTemp.temperature), self.udpAddress)
+                temp = 0
+                if self.cpuTemp:
+                    temp = self.cpuTemp.temperature
+                self.sock.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.udpAddress)
         return len(input_items[0])
 
 
