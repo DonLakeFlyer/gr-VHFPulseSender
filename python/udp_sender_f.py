@@ -6,6 +6,7 @@ import struct
 import math
 import numpy
 import CommandParser
+import time
 from gnuradio import gr
 
 try:
@@ -34,6 +35,7 @@ class udp_sender_f(gr.sync_block):
         self.udpAddress = ('224.0.0.1', 5007)
 
         self.pulseDetectBase = None
+        self.lastPulseTime = time.time()
 
     def work(self, input_items, output_items):
         for pulseValue in input_items[0]:
@@ -50,6 +52,14 @@ class udp_sender_f(gr.sync_block):
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
                 self.sock.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.udpAddress)
+                self.lastPulseTime = time.time()
+            elif time.time() - self.lastPulseTime > 3:
+                temp = 0
+                if self.cpuTemp:
+                    temp = self.cpuTemp.temperature
+                self.sock.sendto(struct.pack('<iff', self.channelIndex, 0, temp), self.udpAddress)
+                self.lastPulseTime = time.time()
+
         return len(input_items[0])
 
 
