@@ -33,7 +33,7 @@ class udp_sender_f(gr.sync_block):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
         self.socket.setblocking(False)
-        self.udpAddress = (MCAST_GRP, MCAST_PORT)
+        self.udpAddress = ('224.0.0.1', 5007) 
 
         self.pulseDetectBase = None
         self.lastPulseTime = time.time()
