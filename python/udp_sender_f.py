@@ -30,9 +30,10 @@ class udp_sender_f(gr.sync_block):
         else:
             self.cpuTemp = None
 
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self.sock.setblocking(False)
-        self.udpAddress = ('224.0.0.1', 5007)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
+        self.socket.setblocking(False)
+        self.udpAddress = (MCAST_GRP, MCAST_PORT)
 
         self.pulseDetectBase = None
         self.lastPulseTime = time.time()
@@ -40,24 +41,24 @@ class udp_sender_f(gr.sync_block):
     def work(self, input_items, output_items):
         for pulseValue in input_items[0]:
             try:
-                data = self.sock.recv(1024)
+                data = self.socket.recv(1024)
             except:
                 pass
             else:
-                parseCommand(data, self.pulseDetectBase)
+                self.parseCommand(data)
             if math.isnan(pulseValue):
                 continue
             if pulseValue > 0:
                 temp = 0
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
-                self.sock.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.udpAddress)
+                self.socket.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.udpAddress)
                 self.lastPulseTime = time.time()
             elif time.time() - self.lastPulseTime > 3:
                 temp = 0
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
-                self.sock.sendto(struct.pack('<iff', self.channelIndex, 0, temp), self.udpAddress)
+                self.socket.sendto(struct.pack('<iff', self.channelIndex, 0, temp), self.udpAddress)
                 self.lastPulseTime = time.time()
 
         return len(input_items[0])
@@ -65,3 +66,14 @@ class udp_sender_f(gr.sync_block):
 
     def setPulseDetectBase(self, pulseDetectBase):
         self.pulseDetectBase = pulseDetectBase
+
+    def parseCommand(self, commandBytes):
+        command, value = struct.unpack_from('<ii', commandBytes)
+        if command == 1:
+            print("Gain changed ", value)
+            self.pulseDetectBase.set_gain(value)
+        elif command == 2: 
+            print("Frequency changed ", value)
+            self.pulseDetectBase.set_pulse_freq(value)
+        else:
+            print("Unknown command ", command, len(commandBytes))
