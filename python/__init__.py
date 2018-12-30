@@ -32,5 +32,4 @@ except ImportError:
 
 # import any pure python here
 from udp_sender_f import udp_sender_f
-from bt_sender_f import bt_sender_f
 #

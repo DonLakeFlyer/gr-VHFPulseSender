@@ -19,5 +19,5 @@
 
 install(FILES
     VHFPulseSender_udp_sender_f.xml
-    VHFPulseSender_bt_sender_f.xml DESTINATION share/gnuradio/grc/blocks
+    DESTINATION share/gnuradio/grc/blocks
 )

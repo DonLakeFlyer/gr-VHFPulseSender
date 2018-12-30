@@ -33,7 +33,7 @@ GR_PYTHON_INSTALL(
     __init__.py
     CommandParser.py
     udp_sender_f.py
-    bt_sender_f.py DESTINATION ${GR_PYTHON_DIR}/VHFPulseSender
+    DESTINATION ${GR_PYTHON_DIR}/VHFPulseSender
 )
 
 ########################################################################
