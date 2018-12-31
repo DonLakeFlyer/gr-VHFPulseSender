@@ -4,11 +4,18 @@
   <key>VHFPulseSender_udp_sender_f</key>
   <category>VHFPulseSender</category>
   <import>import VHFPulseSender</import>
-  <make>VHFPulseSender.udp_sender_f($channel_index)</make>
+  <make>VHFPulseSender.udp_sender_f($channel_index, $localhost)</make>
 
   <param>
     <name>Channel Index</name>
     <key>channel_index</key>
+    <value>0</value>
+    <type>int</type>
+  </param>  
+
+  <param>
+    <name>localhost</name>
+    <key>localhost</key>
     <value>0</value>
     <type>int</type>
   </param>  

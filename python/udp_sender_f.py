@@ -5,7 +5,6 @@ import socket
 import struct
 import math
 import numpy
-import CommandParser
 import time
 from gnuradio import gr
 
@@ -20,7 +19,7 @@ class udp_sender_f(gr.sync_block):
     """
     docstring for block udp_sender_f
     """
-    def __init__(self, channel_index):
+    def __init__(self, channel_index, localhost):
         gr.sync_block.__init__(self, name="udp_sender_f", in_sig=[numpy.float32], out_sig=None)
 
         self.channelIndex = channel_index
@@ -30,15 +29,27 @@ class udp_sender_f(gr.sync_block):
         else:
             self.cpuTemp = None
 
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        if localhost == 1:
+            # VHF Drone
+            self.socket.bind(('localhost', 10001))
+            self.sendAddress = ('localhost', 10000) 
+        else:
+            # STE Tracker
+            self.socket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
+            self.sendAddress = ('224.0.0.1', 5007) 
         self.socket.setblocking(False)
-        self.udpAddress = ('224.0.0.1', 5007) 
 
         self.pulseDetectBase = None
         self.lastPulseTime = time.time()
 
+        self.printOnce = True
+        self.localhost = localhost
+
     def work(self, input_items, output_items):
+        if self.printOnce:
+            print (self.sendAddress, self.localhost)
+            self.printOnce = False
         for pulseValue in input_items[0]:
             try:
                 data = self.socket.recv(1024)
@@ -52,13 +63,13 @@ class udp_sender_f(gr.sync_block):
                 temp = 0
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
-                self.socket.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.udpAddress)
+                self.socket.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.sendAddress)
                 self.lastPulseTime = time.time()
             elif time.time() - self.lastPulseTime > 3:
                 temp = 0
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
-                self.socket.sendto(struct.pack('<iff', self.channelIndex, 0, temp), self.udpAddress)
+                self.socket.sendto(struct.pack('<iff', self.channelIndex, 0, temp), self.sendAddress)
                 self.lastPulseTime = time.time()
 
         return len(input_items[0])

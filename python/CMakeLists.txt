@@ -31,7 +31,6 @@ endif()
 GR_PYTHON_INSTALL(
     FILES
     __init__.py
-    CommandParser.py
     udp_sender_f.py
     DESTINATION ${GR_PYTHON_DIR}/VHFPulseSender
 )
