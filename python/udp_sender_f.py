@@ -64,7 +64,7 @@ class udp_sender_f(gr.sync_block):
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
                 try:
-                    self.socket.sendto(struct.pack('<iff', self.channelIndex, pulseValue, temp), self.sendAddress)
+                    self.socket.sendto(struct.pack('<iffi', self.channelIndex, pulseValue, temp, self.pulseDetectBase.get_gain()), self.sendAddress)
                 except Exception as e:
                     print("Exception udp_sender:work valid pulse send", e)
                 self.lastPulseTime = time.time()
@@ -73,7 +73,7 @@ class udp_sender_f(gr.sync_block):
                 if self.cpuTemp:
                     temp = self.cpuTemp.temperature
                 try:
-                    self.socket.sendto(struct.pack('<iff', self.channelIndex, 0, temp), self.sendAddress)
+                    self.socket.sendto(struct.pack('<iffi', self.channelIndex, 0, temp, self.pulseDetectBase.get_gain()), self.sendAddress)
                 except Exception as e:
                     print("Exception udp_sender:work no pulse send", e)
                 self.lastPulseTime = time.time()
