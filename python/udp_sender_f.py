@@ -23,6 +23,7 @@ class udp_sender_f(gr.sync_block):
         gr.sync_block.__init__(self, name="udp_sender_f", in_sig=[numpy.float32], out_sig=None)
 
         self.channelIndex = channel_index
+        self.sendIndex = 0
 
         if gpiozerioAvailable:
             self.cpuTemp = CPUTemperature()
@@ -65,7 +66,8 @@ class udp_sender_f(gr.sync_block):
                     temp = self.cpuTemp.temperature
                 try:
                     self.socket.sendto(
-                        struct.pack('<iffii', 
+                        struct.pack('<iiffii', 
+                            self.sendIndex,
                             self.channelIndex, 
                             pulseValue, 
                             temp, 
@@ -75,6 +77,7 @@ class udp_sender_f(gr.sync_block):
                 except Exception as e:
                     print("Exception udp_sender:work valid pulse send", e)
                 self.lastPulseTime = time.time()
+                self.sendIndex = self.sendIndex + 1
             elif time.time() - self.lastPulseTime > 3:
                 temp = 0
                 if self.cpuTemp:
