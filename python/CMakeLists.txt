@@ -32,6 +32,7 @@ GR_PYTHON_INSTALL(
     FILES
     __init__.py
     udp_sender_f.py
+    UDPThread.py
     DESTINATION ${GR_PYTHON_DIR}/VHFPulseSender
 )
 
