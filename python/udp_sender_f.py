@@ -17,11 +17,10 @@ class udp_sender_f(gr.sync_block):
 
         self.pulseQueue = Queue()
 
-        self.udpThread = UDPThread.UDPThread(localhost == 1, self.pulseQueue)
+        self.udpThread = UDPThread.UDPThread(localhost == 1, self.pulseQueue, channel_index)
         self.udpThread.start()
 
         self.channelIndex = channel_index
-        self.sendIndex = 0
 
         self.pulseDetectBase = None
         self.lastPulseTime = time.time()
@@ -46,6 +45,7 @@ class udp_sender_f(gr.sync_block):
 
     def setPulseDetectBase(self, pulseDetectBase):
         self.pulseDetectBase = pulseDetectBase
+        self.udpThread.setPulseDetectBase(pulseDetectBase)
 
     def parseCommand(self, commandBytes):
         command, value = struct.unpack_from('<ii', commandBytes)
