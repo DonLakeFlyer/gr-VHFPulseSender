@@ -1,6 +1,5 @@
 import threading
 import math
-import logging
 import subprocess
 import socket
 import select

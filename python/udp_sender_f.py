@@ -8,6 +8,7 @@ from gnuradio import gr
 from multiprocessing import Queue
 import UDPThread
 import TCPThread
+import logging
 
 class udp_sender_f(gr.sync_block):
     """
@@ -23,9 +24,7 @@ class udp_sender_f(gr.sync_block):
         self.udpThread.start()
 
         self.tcpThread = TCPThread.TCPThread(self.tcpQueue, channel_index)
-        if localhost == 1:
-            # PDC Drone doesn't use TCP
-            self.tcpThread.start()
+        self.tcpThread.start()
 
         self.channelIndex = channel_index
 
@@ -43,7 +42,7 @@ class udp_sender_f(gr.sync_block):
                 sendPulse = True
 
             if sendPulse:
-                print("Adding to queue")
+                logging.debug("Adding to queue")
                 if self.tcpThread.tcpClient:
                     self.tcpQueue.put(pulseValue)
                 else:
@@ -60,10 +59,10 @@ class udp_sender_f(gr.sync_block):
     def parseCommand(self, commandBytes):
         command, value = struct.unpack_from('<ii', commandBytes)
         if command == 1:
-            print("Gain changed ", value)
+            logging.debug("Gain changed ", value)
             self.pulseDetectBase.set_gain(value)
         elif command == 2: 
-            print("Frequency changed ", value)
+            logging.debug("Frequency changed ", value)
             self.pulseDetectBase.set_pulse_freq(value)
         else:
-            print("Unknown command ", command, len(commandBytes))
+            logging.debug("Unknown command ", command, len(commandBytes))

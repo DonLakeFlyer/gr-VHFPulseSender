@@ -1,6 +1,5 @@
 import threading
 import math
-import logging
 import subprocess
 import socket
 import select
@@ -30,14 +29,14 @@ class TCPThread (threading.Thread):
 			self.cpuTemp = None
 
 		self.tcpSocketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.tcpAddress = ('127.0.0.1', 5005)
+		self.tcpAddress = ('localhost', 50000)
 		self.tcpSocketServer.bind(self.tcpAddress)
 		self.tcpSocketServer.listen(1)
 		self.tcpClient = None
 
 	def run(self):
 		print("Waiting on TCP client connection")
-		self.tcpClient, clientAddress = s.accept()
+		self.tcpClient, clientAddress = self.tcpSocketServer.accept()
 		print("TCP connected", clientAddress)
 		while True:
 			pulseValue = self.pulseQueue.get(True)
