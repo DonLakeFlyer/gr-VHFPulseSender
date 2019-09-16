@@ -13,10 +13,10 @@ except:
 else:
     gpiozerioAvailable = True
 
-class UDPThread (threading.Thread):
+class TCPThread (threading.Thread):
 	exitFlag = False
 
-	def __init__(self, drone, pulseQueue, channelIndex):
+	def __init__(self, pulseQueue, channelIndex):
 		threading.Thread.__init__(self)
 
 		self.pulseQueue = pulseQueue
@@ -29,22 +29,19 @@ class UDPThread (threading.Thread):
 		else:
 			self.cpuTemp = None
 
-		self.udpSocket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-		if drone:
-			# PDC Drone
-			self.udpSocket.bind(('localhost', 10001))
-			self.sendAddress = ('localhost', 10000) 
-		else:
-			# STE Tracker
-			self.udpSocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
-			self.sendAddress = ('224.0.0.1', 5007) 
-			self.udpSocket.setblocking(False)
+		self.tcpSocketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.tcpAddress = ('127.0.0.1', 5005)
+		self.tcpSocketServer.bind(self.tcpAddress)
+		self.tcpSocketServer.listen(1)
+		self.tcpClient = None
 
 	def run(self):
+		print("Waiting on TCP client connection")
+		self.tcpClient, clientAddress = s.accept()
+		print("TCP connected", clientAddress)
 		while True:
 			pulseValue = self.pulseQueue.get(True)
-			print("UDPThread pulseValue", pulseValue)
+			print("TCPThread pulseValue", pulseValue)
 
 			temp = 0
 			if self.cpuTemp:
@@ -58,7 +55,7 @@ class UDPThread (threading.Thread):
 							self.pulseDetectBase.get_pulse_freq(),
 							self.pulseDetectBase.get_gain())
 			try:
-				self.udpSocket.sendto(packedData, self.sendAddress)
+				self.tcpClient.sendall(packedData)
 			except Exception as e:
 				print("Exception udp_sender:work Sending pulse to UDP socket", e)
 			self.sendIndex = self.sendIndex + 1

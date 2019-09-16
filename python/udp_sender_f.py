@@ -7,6 +7,7 @@ import time
 from gnuradio import gr
 from multiprocessing import Queue
 import UDPThread
+import TCPThread
 
 class udp_sender_f(gr.sync_block):
     """
@@ -15,10 +16,16 @@ class udp_sender_f(gr.sync_block):
     def __init__(self, channel_index, localhost):
         gr.sync_block.__init__(self, name="udp_sender_f", in_sig=[numpy.float32], out_sig=None)
 
-        self.pulseQueue = Queue()
+        self.tcpQueue = Queue()
+        self.udpQueue = Queue()
 
-        self.udpThread = UDPThread.UDPThread(localhost == 1, self.pulseQueue, channel_index)
+        self.udpThread = UDPThread.UDPThread(localhost == 1, self.udpQueue, channel_index)
         self.udpThread.start()
+
+        self.tcpThread = TCPThread.TCPThread(self.tcpQueue, channel_index)
+        if localhost == 1:
+            # PDC Drone doesn't use TCP
+            self.tcpThread.start()
 
         self.channelIndex = channel_index
 
@@ -37,7 +44,10 @@ class udp_sender_f(gr.sync_block):
 
             if sendPulse:
                 print("Adding to queue")
-                self.pulseQueue.put(pulseValue)
+                if self.tcpThread.tcpClient:
+                    self.tcpQueue.put(pulseValue)
+                else:
+                    self.udpQueue.put(pulseValue)
                 self.lastPulseTime = time.time()
 
         return len(input_items[0])
