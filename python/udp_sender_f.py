@@ -17,16 +17,11 @@ class udp_sender_f(gr.sync_block):
     def __init__(self, channel_index, localhost):
         gr.sync_block.__init__(self, name="udp_sender_f", in_sig=[numpy.float32], out_sig=None)
 
+        self.channelIndex = channel_index
+        self.localhost = localhost
+
         self.tcpQueue = Queue()
         self.udpQueue = Queue()
-
-        self.udpThread = UDPThread.UDPThread(localhost == 1, self.udpQueue, channel_index)
-        self.udpThread.start()
-
-        self.tcpThread = TCPThread.TCPThread(self.tcpQueue, channel_index)
-        self.tcpThread.start()
-
-        self.channelIndex = channel_index
 
         self.pulseDetectBase = None
         self.lastPulseTime = time.time()
@@ -42,7 +37,7 @@ class udp_sender_f(gr.sync_block):
                 sendPulse = True
 
             if sendPulse:
-                logging.debug("Adding to queue")
+                print("Adding to queue")
                 if self.tcpThread.tcpClient:
                     self.tcpQueue.put(pulseValue)
                 else:
@@ -53,16 +48,20 @@ class udp_sender_f(gr.sync_block):
 
 
     def setPulseDetectBase(self, pulseDetectBase):
+        print("setPulseDetectBase", pulseDetectBase)
         self.pulseDetectBase = pulseDetectBase
-        self.udpThread.setPulseDetectBase(pulseDetectBase)
+        self.udpThread = UDPThread.UDPThread(self.localhost == 1, self.udpQueue, self.channelIndex, pulseDetectBase)
+        self.udpThread.start()
+        self.tcpThread = TCPThread.TCPThread(self.tcpQueue, self.channelIndex, pulseDetectBase)
+        self.tcpThread.start()
 
     def parseCommand(self, commandBytes):
         command, value = struct.unpack_from('<ii', commandBytes)
         if command == 1:
-            logging.debug("Gain changed ", value)
+            print("Gain changed ", value)
             self.pulseDetectBase.set_gain(value)
         elif command == 2: 
-            logging.debug("Frequency changed ", value)
+            print("Frequency changed ", value)
             self.pulseDetectBase.set_pulse_freq(value)
         else:
-            logging.debug("Unknown command ", command, len(commandBytes))
+            print("Unknown command ", command, len(commandBytes))

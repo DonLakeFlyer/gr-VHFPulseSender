@@ -15,13 +15,13 @@ else:
 class TCPThread (threading.Thread):
 	exitFlag = False
 
-	def __init__(self, pulseQueue, channelIndex):
+	def __init__(self, pulseQueue, channelIndex, pulseDetectBase):
 		threading.Thread.__init__(self)
 
 		self.pulseQueue = pulseQueue
 		self.channelIndex = channelIndex
+		self.pulseDetectBase = pulseDetectBase
 		self.sendIndex = 0
-		self.pulseDetectBase = None
 
 		if gpiozerioAvailable:
 			self.cpuTemp = CPUTemperature()
@@ -29,7 +29,7 @@ class TCPThread (threading.Thread):
 			self.cpuTemp = None
 
 		self.tcpSocketServer = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.tcpAddress = ('localhost', 50000)
+		self.tcpAddress = ('', 50000)
 		self.tcpSocketServer.bind(self.tcpAddress)
 		self.tcpSocketServer.listen(1)
 		self.tcpClient = None
@@ -58,9 +58,6 @@ class TCPThread (threading.Thread):
 			except Exception as e:
 				print("Exception udp_sender:work Sending pulse to UDP socket", e)
 			self.sendIndex = self.sendIndex + 1
-
-	def setPulseDetectBase(self, pulseDetectBase):
-		self.pulseDetectBase = pulseDetectBase
 
 #	def foo(self):
 		# First see if we have a tcp connection
