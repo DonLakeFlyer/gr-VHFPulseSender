@@ -58,16 +58,17 @@ class TCPThread (threading.Thread):
 				try:
 					self.tcpClient.sendall(packedData)
 				except Exception as e:
+					client = self.tcpClient
+					self.tcpClient = None
 					print("Exception TCPThread send", e)
 					try:
-						self.tcpClient.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
+						client.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
 					except:
 						pass
 					try:
-						self.tcpClient.close()
+						client.close()
 					except:
 						pass
-					self.tcpClient = None
 					print("TCP connection closed")
 					break
 				self.sendIndex = self.sendIndex + 1
