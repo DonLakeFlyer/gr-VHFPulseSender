@@ -4,6 +4,7 @@ import subprocess
 import socket
 import select
 import struct
+import time
 
 try:
     from gpiozero import CPUTemperature
@@ -51,17 +52,20 @@ class UDPThread (threading.Thread):
 			if self.cpuTemp:
 				temp = self.cpuTemp.temperature
 
-			packedData = struct.pack('<iiffii', 
-							self.sendIndex,
-							self.channelIndex, 
-							pulseValue, 
-							temp, 
-							self.pulseDetectBase.get_pulse_freq(),
-							self.pulseDetectBase.get_gain())
-			try:
-				self.udpSocket.sendto(packedData, self.sendAddress)
-			except Exception as e:
-				print("Exception UDPThread send", e)
+			for x in range(0, 3):
+				packedData = struct.pack('<iiffii', 
+								self.sendIndex,
+								self.channelIndex, 
+								pulseValue, 
+								temp, 
+								self.pulseDetectBase.get_pulse_freq(),
+								self.pulseDetectBase.get_gain())
+				try:
+					self.udpSocket.sendto(packedData, self.sendAddress)
+				except Exception as e:
+					print("Exception UDPThread send", e)
+				if x != 2:
+					time.sleep(0.1)
 			self.sendIndex = self.sendIndex + 1
 
 #	def foo(self):
