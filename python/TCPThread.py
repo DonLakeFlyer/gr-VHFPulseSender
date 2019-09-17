@@ -41,14 +41,6 @@ class TCPThread (threading.Thread):
 			print("TCP connected", clientAddress)
 
 			while True:
-				try:
-					ready_to_read, ready_to_write, in_error = select.select([self.tcpClient,], [self.tcpClient,], [], 0)
-				except select.error:
-					self.tcpClient.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
-					self.tcpClient.close()
-					print("TCP connection closed")
-					break
- 
 				pulseValue = self.pulseQueue.get(True)
 				print("TCPThread pulseValue", pulseValue)
 
@@ -67,6 +59,11 @@ class TCPThread (threading.Thread):
 					self.tcpClient.sendall(packedData)
 				except Exception as e:
 					print("Exception TCPThread send", e)
+					self.tcpClient.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
+					self.tcpClient.close()
+					self.tcpClient = None
+					print("TCP connection closed")
+					break
 				self.sendIndex = self.sendIndex + 1
 
 #	def foo(self):
