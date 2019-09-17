@@ -35,29 +35,39 @@ class TCPThread (threading.Thread):
 		self.tcpClient = None
 
 	def run(self):
-		print("Waiting on TCP client connection")
-		self.tcpClient, clientAddress = self.tcpSocketServer.accept()
-		print("TCP connected", clientAddress)
 		while True:
-			pulseValue = self.pulseQueue.get(True)
-			print("TCPThread pulseValue", pulseValue)
+			print("Waiting on TCP client connection")
+			self.tcpClient, clientAddress = self.tcpSocketServer.accept()
+			print("TCP connected", clientAddress)
 
-			temp = 0
-			if self.cpuTemp:
-				temp = self.cpuTemp.temperature
+			while True:
+				try:
+					ready_to_read, ready_to_write, in_error = select.select([self.tcpClient,], [self.tcpClient,], [], 0)
+				except select.error:
+					self.tcpClient.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
+					self.tcpClient.close()
+					print("TCP connection closed")
+					break
+ 
+				pulseValue = self.pulseQueue.get(True)
+				print("TCPThread pulseValue", pulseValue)
 
-			packedData = struct.pack('<iiffii', 
-							self.sendIndex,
-							self.channelIndex, 
-							pulseValue, 
-							temp, 
-							self.pulseDetectBase.get_pulse_freq(),
-							self.pulseDetectBase.get_gain())
-			try:
-				self.tcpClient.sendall(packedData)
-			except Exception as e:
-				print("Exception udp_sender:work Sending pulse to UDP socket", e)
-			self.sendIndex = self.sendIndex + 1
+				temp = 0
+				if self.cpuTemp:
+					temp = self.cpuTemp.temperature
+
+				packedData = struct.pack('<iiffii', 
+								self.sendIndex,
+								self.channelIndex, 
+								pulseValue, 
+								temp, 
+								self.pulseDetectBase.get_pulse_freq(),
+								self.pulseDetectBase.get_gain())
+				try:
+					self.tcpClient.sendall(packedData)
+				except Exception as e:
+					print("Exception TCPThread send", e)
+				self.sendIndex = self.sendIndex + 1
 
 #	def foo(self):
 		# First see if we have a tcp connection

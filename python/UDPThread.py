@@ -61,7 +61,7 @@ class UDPThread (threading.Thread):
 			try:
 				self.udpSocket.sendto(packedData, self.sendAddress)
 			except Exception as e:
-				print("Exception udp_sender:work Sending pulse to UDP socket", e)
+				print("Exception UDPThread send", e)
 			self.sendIndex = self.sendIndex + 1
 
 #	def foo(self):
