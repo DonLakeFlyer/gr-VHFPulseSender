@@ -38,11 +38,11 @@ class udp_sender_f(gr.sync_block):
 
             if sendPulse:
                 print("Adding to queue")
-                #if self.tcpThread.tcpClient:
-                #    self.tcpQueue.put(pulseValue)
-                #else:
-                #    self.udpQueue.put(pulseValue)
-                self.udpQueue.put(pulseValue)
+                if self.tcpThread.tcpClient:
+                    self.tcpQueue.put(pulseValue)
+                else:
+                    self.udpQueue.put(pulseValue)
+                #self.udpQueue.put(pulseValue)
                 self.lastPulseTime = time.time()
 
         return len(input_items[0])
@@ -53,8 +53,8 @@ class udp_sender_f(gr.sync_block):
         self.pulseDetectBase = pulseDetectBase
         self.udpThread = UDPThread.UDPThread(self.localhost == 1, self.udpQueue, self.channelIndex, pulseDetectBase)
         self.udpThread.start()
-        #self.tcpThread = TCPThread.TCPThread(self.tcpQueue, self.channelIndex, pulseDetectBase)
-        #self.tcpThread.start()
+        self.tcpThread = TCPThread.TCPThread(self.tcpQueue, self.channelIndex, pulseDetectBase)
+        self.tcpThread.start()
 
     def parseCommand(self, commandBytes):
         command, value = struct.unpack_from('<ii', commandBytes)
