@@ -55,14 +55,3 @@ class udp_sender_f(gr.sync_block):
         self.udpThread.start()
         self.tcpThread = TCPThread.TCPThread(self.tcpQueue, self.channelIndex, pulseDetectBase)
         self.tcpThread.start()
-
-    def parseCommand(self, commandBytes):
-        command, value = struct.unpack_from('<ii', commandBytes)
-        if command == 1:
-            print("Gain changed ", value)
-            self.pulseDetectBase.set_gain(value)
-        elif command == 2: 
-            print("Frequency changed ", value)
-            self.pulseDetectBase.set_pulse_freq(value)
-        else:
-            print("Unknown command ", command, len(commandBytes))

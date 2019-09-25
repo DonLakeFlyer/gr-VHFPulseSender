@@ -41,10 +41,18 @@ class UDPThread (threading.Thread):
 			# STE Tracker
 			self.udpSocket.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_LOOP, 0)
 			self.sendAddress = ('224.0.0.1', 5007) 
-			self.udpSocket.setblocking(False)
+		self.udpSocket.setblocking(False)
 
 	def run(self):
 		while True:
+			# Check for incoming commands
+			try:
+				data = self.udpSocket.recv(1024)
+			except:
+				pass
+			else:
+				self.parseCommand(data)
+
 			pulseValue = self.pulseQueue.get(True)
 			print("UDPThread pulseValue", pulseValue)
 
@@ -64,6 +72,18 @@ class UDPThread (threading.Thread):
 			except Exception as e:
 				print("Exception UDPThread send", e)
 			self.sendIndex = self.sendIndex + 1
+
+
+	def parseCommand(self, commandBytes):
+		command, value = struct.unpack_from('<ii', commandBytes)
+		if command == 1:
+			print("Gain changed ", value)
+			self.pulseDetectBase.set_gain(value)
+		elif command == 2: 
+			print("Frequency changed ", value)
+			self.pulseDetectBase.set_pulse_freq(value)
+		else:
+			print("Unknown command ", command, len(commandBytes))
 
 #	def foo(self):
 		# First see if we have a tcp connection
