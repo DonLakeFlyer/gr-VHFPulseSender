@@ -38,9 +38,19 @@ class TCPThread (threading.Thread):
 		while True:
 			print("Waiting on TCP client connection")
 			self.tcpClient, clientAddress = self.tcpSocketServer.accept()
+			self.tcpClient.setblocking(False)
 			print("TCP connected", clientAddress)
 
 			while True:
+				# Check for incoming commands
+				try:
+					data = self.tcpClient.recv(8)
+				except:
+					pass
+				else:
+					if len(data) == 8:
+						self.parseCommand(data)
+
 				pulseValue = self.pulseQueue.get(True)
 				print("TCPThread pulseValue", pulseValue)
 
@@ -72,3 +82,14 @@ class TCPThread (threading.Thread):
 					print("TCP connection closed")
 					break
 				self.sendIndex = self.sendIndex + 1
+
+	def parseCommand(self, commandBytes):
+		command, value = struct.unpack_from('<ii', commandBytes)
+		if command == 1:
+			print("Gain changed ", value)
+			self.pulseDetectBase.set_gain(value)
+		elif command == 2: 
+			print("Frequency changed ", value)
+			self.pulseDetectBase.set_pulse_freq(value)
+		else:
+			print("Unknown command ", command, len(commandBytes))
