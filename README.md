@@ -1,1 +1,1 @@
-gr-VHFPulseSender
+Deprecated. Replaced by https://github.com/DonLakeFlyer/VHFPulseDetect
